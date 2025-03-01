@@ -4,7 +4,8 @@ import 'package:hive_ce/hive.dart';
 
 class DateSelectWidget extends StatefulWidget {
   final Function(DateTime? value) onChanged;
-  const DateSelectWidget({super.key, required this.onChanged});
+  final DateTime? initialDateTime;
+  const DateSelectWidget({super.key, required this.onChanged, this.initialDateTime});
 
   @override
   State<DateSelectWidget> createState() => _DateSelectWidgetState();
@@ -12,6 +13,20 @@ class DateSelectWidget extends StatefulWidget {
 
 class _DateSelectWidgetState extends State<DateSelectWidget> {
   DateTime? selectedDateTime;
+
+  @override
+  void initState() {
+    selectedDateTime = widget.initialDateTime;
+    super.initState();
+  }
+
+  @override
+  void didUpdateWidget(covariant DateSelectWidget oldWidget) {
+    if(oldWidget.initialDateTime != selectedDateTime){
+      selectedDateTime = widget.initialDateTime;
+    }
+    super.didUpdateWidget(oldWidget);
+  }
 
   void _showDialog() {
     showCupertinoModalPopup<void>(
