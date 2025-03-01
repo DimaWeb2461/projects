@@ -7,7 +7,7 @@ import 'application.dart';
 
 void main() async {
   await Hive.initFlutter();
-  await Hive.openLazyBox("application");
+  await Hive.openBox("application");
 
   runApp(const Application());
 }
