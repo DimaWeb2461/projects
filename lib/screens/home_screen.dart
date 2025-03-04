@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:hive_ce/hive.dart';
@@ -20,6 +21,8 @@ class _HomeScreenState extends State<HomeScreen> {
   List<TodoEntity> todos = [];
 
   final TodoRepository todoRepository = TodoRepository();
+
+  bool isLoading = false;
   @override
   void initState() {
     loadTodo();
@@ -27,7 +30,19 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   loadTodo() async {
+    isLoading = true;
+    setState(() {});
+    await Future.delayed(Duration(seconds: 1));
     todos = await todoRepository.loadTodos();
+    isLoading = false;
+    setState(() {});
+  }
+
+  deleteTodo(int id) async {
+    await todoRepository.deleteTodo(id);
+    todos.removeWhere(
+      (element) => element.id == id,
+    );
     setState(() {});
   }
 
@@ -55,56 +70,61 @@ class _HomeScreenState extends State<HomeScreen> {
           onRefresh: () async {
             await loadTodo();
           },
-          child: ListView.builder(
-            itemCount: todos.length,
-            itemBuilder: (context, index) {
-              final entity = todos[index];
-              return Dismissible(
-                key: ValueKey(entity.id),
-                direction: DismissDirection.horizontal,
-                onDismissed: (direction) {
-                  todos.remove(entity);
-                },
-                movementDuration: Duration(seconds: 1),
-                resizeDuration: Duration(seconds: 2),
-                background: Container(
-                  width: 1.sw,
-                  height: 30,
-                  color: Colors.red,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Text(
-                        "DELETED !",
-                        style: TextStyle(
-                          color: Colors.white,
+          child: isLoading
+              ? Center(
+                  child: CupertinoActivityIndicator(),
+                )
+              : ListView.builder(
+                  itemCount: todos.length,
+                  itemBuilder: (context, index) {
+                    final entity = todos[index];
+                    return Dismissible(
+                      key: ValueKey(entity.id),
+                      direction: DismissDirection.horizontal,
+                      onDismissed: (direction) async {
+                        await deleteTodo(entity.id);
+                        todos.remove(entity);
+                      },
+                      movementDuration: Duration(seconds: 1),
+                      resizeDuration: Duration(seconds: 2),
+                      background: Container(
+                        width: 1.sw,
+                        height: 30,
+                        color: Colors.red,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Text(
+                              "DELETED !",
+                              style: TextStyle(
+                                color: Colors.white,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                    ],
-                  ),
-                ),
-                child: TodoCardWidget(
-                  entity: entity,
-                  onDelete: () {
-                    todos.remove(entity);
-                    setState(() {});
-                  },
-                  onComplete: () {},
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => EditTodoScreen(
-                          todo: entity,
-                        ),
+                      child: TodoCardWidget(
+                        entity: entity,
+                        onDelete: () async => await deleteTodo(entity.id),
+                        onComplete: () {},
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => EditTodoScreen(
+                                todo: entity,
+                                onBack: () async {
+                                  await loadTodo();
+                                },
+                              ),
+                            ),
+                          );
+                        },
                       ),
                     );
                   },
                 ),
-              );
-            },
-          ),
         ),
       ),
       floatingActionButton: FloatingActionButton(
@@ -112,7 +132,11 @@ class _HomeScreenState extends State<HomeScreen> {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => EditTodoScreen(),
+              builder: (context) => EditTodoScreen(
+                onBack: () async {
+                  await loadTodo();
+                },
+              ),
             ),
           );
         },

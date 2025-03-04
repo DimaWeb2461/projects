@@ -1,3 +1,5 @@
+
+
 import 'package:flutter/material.dart';
 
 import '../core/entities/todo_entity.dart';
@@ -7,7 +9,8 @@ import '../widget/todo_card_widget.dart';
 
 class EditTodoScreen extends StatefulWidget {
   final TodoEntity? todo;
-  const EditTodoScreen({super.key, this.todo});
+  final Function() onBack;
+  const EditTodoScreen({super.key, this.todo, required this.onBack});
 
   @override
   State<EditTodoScreen> createState() => _EditTodoScreenState();
@@ -72,8 +75,8 @@ class _EditTodoScreenState extends State<EditTodoScreen> {
           );
           await todoRepository.createTodo(editedTodo);
           Navigator.pop(context);
+          widget.onBack.call();
         },
-
         child: Icon(Icons.save),
       ),
     );

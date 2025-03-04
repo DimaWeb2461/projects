@@ -30,15 +30,17 @@ class TodoCardWidget extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  Text(
-                    entity.title,
-                    style: TextStyle(
-                      color: active ? Colors.white : Colors.black,
-                      fontWeight: FontWeight.w600,
-                      fontSize: 16,
+                  Expanded(
+                    child: Text(
+                      entity.title,
+                      style: TextStyle(
+                        color: active ? Colors.white : Colors.black,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 16,
+                      ),
                     ),
                   ),
-                  Spacer(),
+                  SizedBox(width: 10),
                   IconButton(
                     onPressed: () => onDelete.call(),
                     icon: Icon(Icons.delete_forever),
