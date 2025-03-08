@@ -3,35 +3,47 @@ import '../core/entities/todo_entity.dart';
 import '../core/repositories/todo_repository.dart';
 
 class TodoController extends ChangeNotifier {
-  final TodoRepository _todoRepository = TodoRepository();
+  final TodoRepository todoRepository = TodoRepository();
   List<TodoEntity> _todos = [];
   bool _isLoading = false;
 
-  List<TodoEntity> get todos => _todos;
+  List<TodoEntity> get listTodo => _todos;
   bool get isLoading => _isLoading;
-
-  Future<void> loadTodo({bool isCompleted = false}) async {
+  loadTodo({TodoSearchBy todoSearchBy = TodoSearchBy.title, String query = '', bool? isCompleted}) async {
     _isLoading = true;
     notifyListeners();
     await Future.delayed(Duration(seconds: 1));
-    _todos = await _todoRepository.loadTodos(isCompleted: isCompleted);
+    _todos = await todoRepository.loadTodos(
+      isCompleted: isCompleted,
+      query: query,
+      searchBy: todoSearchBy,
+    );
     _isLoading = false;
     notifyListeners();
   }
 
-  Future<void> deleteTodo(int id) async {
-    await _todoRepository.deleteTodo(id);
-    _todos.removeWhere((element) => element.id == id);
+  deleteTodo({required int id}) async {
+    await todoRepository.deleteTodo(id);
+    _todos.removeWhere(
+      (element) => element.id == id,
+    );
     notifyListeners();
   }
 
-  Future<void> loadCompletedTodos() async {
-    _isLoading = true;
-    notifyListeners();
-    await Future.delayed(Duration(seconds: 1));
-    _todos = await _todoRepository.loadTodos(isCompleted: true);
-    _isLoading = false;
+  saveTodo({required TodoEntity entity}) async {
+    await todoRepository.createTodo(entity);
+
+
+    final index = _findTodoAndIndex(entity);
+    if (index != -1) {
+      _todos.add(entity);
+    } else {
+      _todos[index] = entity;
+    }
     notifyListeners();
   }
 
+  int _findTodoAndIndex(TodoEntity entity) {
+    return _todos.indexWhere((element) => element.id == entity.id);
+  }
 }

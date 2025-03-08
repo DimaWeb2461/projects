@@ -1,14 +1,34 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../controllers/date_controller.dart';
+import 'package:hive_ce/hive.dart';
 
-
-class DateSelectWidget extends StatelessWidget {
+class DateSelectWidget extends StatefulWidget {
   final Function(DateTime? value) onChanged;
-  const DateSelectWidget({super.key, required this.onChanged, DateTime? initialDateTime});
+  final DateTime? initialDateTime;
+  const DateSelectWidget({super.key, required this.onChanged, this.initialDateTime});
 
-  void _showDialog(BuildContext context) {
+  @override
+  State<DateSelectWidget> createState() => _DateSelectWidgetState();
+}
+
+class _DateSelectWidgetState extends State<DateSelectWidget> {
+  DateTime? selectedDateTime;
+
+  @override
+  void initState() {
+    selectedDateTime = widget.initialDateTime;
+    super.initState();
+  }
+
+  @override
+  void didUpdateWidget(covariant DateSelectWidget oldWidget) {
+    if(oldWidget.initialDateTime != selectedDateTime){
+      selectedDateTime = widget.initialDateTime;
+    }
+    super.didUpdateWidget(oldWidget);
+  }
+
+  void _showDialog() {
     showCupertinoModalPopup<void>(
       context: context,
       builder: (BuildContext context) => Container(
@@ -25,8 +45,9 @@ class DateSelectWidget extends StatelessWidget {
             use24hFormat: true,
             showDayOfWeek: true,
             onDateTimeChanged: (DateTime newTime) {
-              context.read<DateController>().setDate(newTime);
-              onChanged(newTime);
+              selectedDateTime = newTime;
+              widget.onChanged.call(selectedDateTime);
+              setState(() {});
             },
           ),
         ),
@@ -36,10 +57,8 @@ class DateSelectWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final selectedDate = context.watch<DateController>().selectedDate;
-
     return GestureDetector(
-      onTap: () => _showDialog(context),
+      onTap: () => _showDialog(),
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,
@@ -49,15 +68,18 @@ class DateSelectWidget extends StatelessWidget {
           ),
         ),
         padding: EdgeInsets.all(4),
-        child: selectedDate != null
+        child: selectedDateTime != null
             ? Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(selectedDate.toString()),
+            Text(selectedDateTime.toString()),
             IconButton(
               onPressed: () {
-                context.read<DateController>().clearDate();
-                onChanged(null);
+                selectedDateTime = null;
+                widget.onChanged.call(selectedDateTime);
+
+                setState(() {});
+
               },
               icon: Icon(
                 Icons.remove,

@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
+import '../controllers/todo_controller.dart';
 import '../core/entities/todo_entity.dart';
 import '../core/repositories/todo_repository.dart';
 import '../widget/date_select_widget.dart';
 
 class EditTodoScreen extends StatefulWidget {
   final TodoEntity? todo;
-  final Function() onBack;
-  const EditTodoScreen({super.key, this.todo, required this.onBack});
+  const EditTodoScreen({super.key, this.todo,});
 
   @override
   State<EditTodoScreen> createState() => _EditTodoScreenState();
@@ -64,30 +65,13 @@ class _EditTodoScreenState extends State<EditTodoScreen> {
       ),
       floatingActionButton: FloatingActionButton.small(
         onPressed: () async {
-          if (controllerTitle.text.isEmpty ||
-              controllerDescription.text.isEmpty ||
-              selectedDateTime == null) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Please fill all fields')),
-            );
-            return;
-          }
-
-          final TodoEntity editedTodo = todoEntity.copyWith(
-            title: controllerTitle.text,
-            description: controllerDescription.text,
-            dateTime: selectedDateTime,
-          );
-
-          try {
-            await todoRepository.createTodo(editedTodo);
-            widget.onBack.call();
-            Navigator.pop(context);
-          } catch (e) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Error saving todo: $e')),
-            );
-          }
+         final TodoEntity editedTodo = todoEntity.copyWith(
+           title: controllerTitle.text,
+           description: controllerDescription.text,
+           dateTime: selectedDateTime,
+         );
+         context.read<TodoController>().saveTodo(entity: editedTodo);
+        Navigator.pop(context);
         },
         child: const Icon(Icons.save),
       ),

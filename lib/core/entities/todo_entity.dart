@@ -21,7 +21,7 @@ class TodoEntity {
       title: '',
       description: '',
       dateTime: null,
-      isCompleted: false,
+      isCompleted: true,
     );
   }
 
