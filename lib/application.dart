@@ -4,6 +4,9 @@ import 'package:provider/provider.dart';
 
 import 'controllers/counter_controller.dart';
 import 'controllers/todo_controller.dart';
+import 'core/repositories/todo_repository.dart';
+import 'core/service/storage_service.dart';
+import 'locator.dart';
 import 'screens/counter_screen.dart';
 import 'screens/home_screen.dart';
 
@@ -21,8 +24,8 @@ class _ApplicationState extends State<Application> {
 
   @override
   void initState() {
-    counterController = CounterController();
-    todoController = TodoController();
+    counterController = locator();
+    todoController = locator();
     super.initState();
   }
 

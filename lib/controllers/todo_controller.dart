@@ -3,13 +3,18 @@ import '../core/entities/todo_entity.dart';
 import '../core/repositories/todo_repository.dart';
 
 class TodoController extends ChangeNotifier {
-  final TodoRepository todoRepository = TodoRepository();
+  final TodoRepository todoRepository ;
   List<TodoEntity> _todos = [];
   bool _isLoading = false;
 
+  TodoController(this.todoRepository);
+
   List<TodoEntity> get listTodo => _todos;
   bool get isLoading => _isLoading;
-  loadTodo({TodoSearchBy todoSearchBy = TodoSearchBy.title, String query = '', bool? isCompleted}) async {
+  loadTodo(
+      {TodoSearchBy todoSearchBy = TodoSearchBy.title,
+      String query = '',
+      bool? isCompleted}) async {
     _isLoading = true;
     notifyListeners();
     await Future.delayed(Duration(seconds: 1));
@@ -30,12 +35,19 @@ class TodoController extends ChangeNotifier {
     notifyListeners();
   }
 
+  saveTodoAndRemoveFromList({required TodoEntity todo}) async {
+    await todoRepository.createTodo(todo);
+    final index = _findTodoAndIndex(todo);
+
+    _todos.removeAt(index);
+    notifyListeners();
+  }
+
   saveTodo({required TodoEntity entity}) async {
     await todoRepository.createTodo(entity);
 
-
     final index = _findTodoAndIndex(entity);
-    if (index != -1) {
+    if (index == -1) {
       _todos.add(entity);
     } else {
       _todos[index] = entity;

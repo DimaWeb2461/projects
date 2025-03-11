@@ -87,7 +87,11 @@ class _CompletedTodosScreenState extends State<CompletedTodosScreen> {
                                   .read<TodoController>()
                                   .deleteTodo(id: entity.id);
                             },
-                            onComplete: () {},
+                            onComplete: (todo) {
+                              context
+                                  .read<TodoController>()
+                                  .saveTodoAndRemoveFromList(todo: todo);
+                            },
                             onTap: () {},
                           ),
                         );

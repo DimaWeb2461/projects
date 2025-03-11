@@ -131,7 +131,11 @@ class _HomeScreenState extends State<HomeScreen> {
                                     child: TodoCardWidget(
                                       entity: entity,
                                       onDelete: () => deleteTodo(entity.id),
-                                      onComplete: () {},
+                                      onComplete: (todo) {
+                                        context
+                                            .read<TodoController>()
+                                            .saveTodoAndRemoveFromList(todo: todo);
+                                      },
                                       onTap: () {
                                         Navigator.push(
                                           context,

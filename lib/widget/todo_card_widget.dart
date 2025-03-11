@@ -1,13 +1,12 @@
-
 import 'package:flutter/material.dart';
 
 import '../core/entities/todo_entity.dart';
 
-class TodoCardWidget extends StatelessWidget {
+class TodoCardWidget extends StatefulWidget {
   final TodoEntity entity;
   final Function() onTap;
   final Function() onDelete;
-  final Function() onComplete;
+  final Function(TodoEntity entity) onComplete;
   const TodoCardWidget({
     super.key,
     required this.entity,
@@ -17,12 +16,24 @@ class TodoCardWidget extends StatelessWidget {
   });
 
   @override
+  State<TodoCardWidget> createState() => _TodoCardWidgetState();
+}
+
+class _TodoCardWidgetState extends State<TodoCardWidget> {
+  bool isCompleted = false;
+
+  @override
+  void initState() {
+    isCompleted = widget.entity.isCompleted;
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final active = entity.isCompleted;
     return GestureDetector(
-      onTap: onTap,
+      onTap: widget.onTap,
       child: Card(
-        color: active ? Colors.lightGreen : Colors.white,
+        color: isCompleted ? Colors.lightGreen : Colors.white,
         child: Padding(
           padding: const EdgeInsets.all(10.0),
           child: Column(
@@ -32,9 +43,9 @@ class TodoCardWidget extends StatelessWidget {
                 children: [
                   Expanded(
                     child: Text(
-                      entity.title,
+                      widget.entity.title,
                       style: TextStyle(
-                        color: active ? Colors.white : Colors.black,
+                        color: isCompleted ? Colors.white : Colors.black,
                         fontWeight: FontWeight.w600,
                         fontSize: 16,
                       ),
@@ -42,25 +53,28 @@ class TodoCardWidget extends StatelessWidget {
                   ),
                   SizedBox(width: 10),
                   IconButton(
-                    onPressed: () => onDelete.call(),
+                    onPressed: () => widget.onDelete.call(),
                     icon: Icon(Icons.delete_forever),
                   ),
                   SizedBox(width: 10),
-                  GestureDetector(
-                    onTap: () => onComplete.call(),
-                    child: Checkbox(
-                      value: entity.isCompleted,
-                      onChanged: (value) {},
-                    ),
+                  Checkbox(
+                    value: isCompleted,
+                    onChanged: (value) {
+                      if (value == null) return;
+                      isCompleted = value;
+                      final editedEntity = widget.entity.copyWith(isCompleted: isCompleted);
+                      widget.onComplete.call(editedEntity);
+                      setState(() {});
+                    },
                   ),
                 ],
               ),
               SizedBox(height: 5),
               Text(
-                entity.description,
+                widget.entity.description,
                 maxLines: 4,
                 style: TextStyle(
-                  color: active ? Colors.white : Colors.black38,
+                  color: isCompleted ? Colors.white : Colors.black38,
                   fontSize: 14,
                 ),
               ),
@@ -68,9 +82,9 @@ class TodoCardWidget extends StatelessWidget {
                 children: [
                   Spacer(),
                   Text(
-                    entity.dateTime.toString(),
+                    widget.entity.dateTime.toString(),
                     style: TextStyle(
-                      color: active ? Colors.white : Colors.black,
+                      color: isCompleted ? Colors.white : Colors.black,
                     ),
                   ),
                 ],

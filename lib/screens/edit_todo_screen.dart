@@ -19,8 +19,6 @@ class _EditTodoScreenState extends State<EditTodoScreen> {
   final TextEditingController controllerDescription = TextEditingController();
   DateTime? selectedDateTime;
 
-  final TodoRepository todoRepository = TodoRepository();
-
   TodoEntity todoEntity = TodoEntity.empty();
 
   @override

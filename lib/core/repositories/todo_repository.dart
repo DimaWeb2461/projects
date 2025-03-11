@@ -22,7 +22,8 @@ enum TodoSearchBy {
   }
 }
 class TodoRepository {
-  final StorageService _storageService = StorageService();
+  final StorageService _storageService;
+  TodoRepository(this._storageService);
   static const _boxName = 'todos';
 
   Future<void> createTodo(TodoEntity todo) async {

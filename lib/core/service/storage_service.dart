@@ -1,6 +1,13 @@
 import 'package:hive_ce/hive.dart';
 
 class StorageService {
+  static final StorageService _singleton = StorageService._internal();
+  factory StorageService() {
+    return _singleton;
+  }
+
+  StorageService._internal();
+
   Future<Box> _openBox({String? boxName}) {
     final box = Hive.openBox(boxName ?? "application");
     return box;
@@ -11,7 +18,8 @@ class StorageService {
     await box.add(value);
   }
 
-  Future<void> save(String key, {required dynamic value, String? boxName}) async {
+  Future<void> save(String key,
+      {required dynamic value, String? boxName}) async {
     final box = await _openBox(boxName: boxName);
     await box.put(key, value);
   }
@@ -38,8 +46,8 @@ class StorageService {
     await box.delete(key);
   }
 
- Future<void> deleteAll(String? boxName) async {
-   final box = await _openBox(boxName: boxName);
-   await box.deleteFromDisk();
- }
+  Future<void> deleteAll(String? boxName) async {
+    final box = await _openBox(boxName: boxName);
+    await box.deleteFromDisk();
+  }
 }
