@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../controllers/todo_controller.dart';
 import '../core/entities/todo_entity.dart';
-import '../core/repositories/todo_repository.dart';
+import '../cubits/todo_cubit/todo__cubit.dart';
 import '../widget/date_select_widget.dart';
 
 class EditTodoScreen extends StatefulWidget {
   final TodoEntity? todo;
-  const EditTodoScreen({super.key, this.todo,});
+  const EditTodoScreen({super.key, this.todo});
 
   @override
   State<EditTodoScreen> createState() => _EditTodoScreenState();
@@ -23,6 +22,7 @@ class _EditTodoScreenState extends State<EditTodoScreen> {
 
   @override
   void initState() {
+    super.initState();
     final todo = widget.todo;
     if (todo != null) {
       todoEntity = todo;
@@ -30,7 +30,6 @@ class _EditTodoScreenState extends State<EditTodoScreen> {
       controllerDescription.text = todo.description;
       selectedDateTime = todo.dateTime;
     }
-    super.initState();
   }
 
   @override
@@ -53,23 +52,28 @@ class _EditTodoScreenState extends State<EditTodoScreen> {
               ),
               TextFormField(
                 controller: controllerTitle,
+                decoration: InputDecoration(labelText: 'Title'),
               ),
               TextFormField(
                 controller: controllerDescription,
+                decoration: InputDecoration(labelText: 'Description'),
               ),
             ],
           ),
         ),
       ),
       floatingActionButton: FloatingActionButton.small(
-        onPressed: () async {
-         final TodoEntity editedTodo = todoEntity.copyWith(
-           title: controllerTitle.text,
-           description: controllerDescription.text,
-           dateTime: selectedDateTime,
-         );
-         context.read<TodoController>().saveTodo(entity: editedTodo);
-        Navigator.pop(context);
+        onPressed: () {
+          final editedTodo = todoEntity.copyWith(
+            title: controllerTitle.text,
+            description: controllerDescription.text,
+            dateTime: selectedDateTime,
+          );
+
+
+          context.read<TodoCubit>().saveTodo(editedTodo);
+
+          Navigator.pop(context);
         },
         child: const Icon(Icons.save),
       ),

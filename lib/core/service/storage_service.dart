@@ -1,12 +1,21 @@
 import 'package:hive_ce/hive.dart';
 
-class StorageService {
-  static final StorageService _singleton = StorageService._internal();
-  factory StorageService() {
-    return _singleton;
-  }
+abstract class StorageService {
+  Future<void> add(dynamic value, {String? boxName});
+  Future<void> save(String key, {required dynamic value, String? boxName});
+  Future<void> saveWithId({required dynamic value, String? boxName});
+  Future<dynamic> get(String key);
+  Future<List<dynamic>> getAll({String? boxName});
+  Future<void> delete(String key, {String? boxName});
+  Future<void> deleteAll(String? boxName);
+}
 
-  StorageService._internal();
+class HiveStorageServiceImpl extends StorageService {
+  // static final StorageServiceImpl _singleton = StorageServiceImpl._internal();
+  // factory StorageServiceImpl() {
+  //   return _singleton;
+  // }
+  // StorageService._internal();
 
   Future<Box> _openBox({String? boxName}) {
     final box = Hive.openBox(boxName ?? "application");

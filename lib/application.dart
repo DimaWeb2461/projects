@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 
@@ -6,6 +7,8 @@ import 'controllers/counter_controller.dart';
 import 'controllers/todo_controller.dart';
 import 'core/repositories/todo_repository.dart';
 import 'core/service/storage_service.dart';
+import 'cubits/counter_cubit/counter__cubit.dart';
+import 'cubits/todo_cubit/todo__cubit.dart';
 import 'locator.dart';
 import 'screens/counter_screen.dart';
 import 'screens/home_screen.dart';
@@ -21,11 +24,14 @@ class Application extends StatefulWidget {
 class _ApplicationState extends State<Application> {
   late CounterController counterController;
   late TodoController todoController;
-
+  late TodoCubit todoCubit;
+  late CounterCubit counterCubit;
   @override
   void initState() {
     counterController = locator();
-    todoController = locator();
+    todoCubit = locator();
+    todoController = locator<TodoController>();
+    counterCubit = locator();
     super.initState();
   }
 
@@ -33,6 +39,8 @@ class _ApplicationState extends State<Application> {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
+        BlocProvider.value(value: counterCubit),
+        BlocProvider.value(value: todoCubit),
         ChangeNotifierProvider.value(value: counterController),
         ChangeNotifierProvider.value(value: todoController),
       ],

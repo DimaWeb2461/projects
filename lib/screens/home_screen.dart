@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:hive_ce/hive.dart';
 import 'package:provider/provider.dart';
@@ -8,6 +9,8 @@ import '../controllers/todo_controller.dart';
 import '../core/entities/todo_entity.dart';
 import '../core/repositories/todo_repository.dart';
 import '../core/service/storage_service.dart';
+import '../cubits/todo_cubit/todo__cubit.dart';
+import '../cubits/todo_cubit/todo__state.dart';
 import '../widget/todo_card_widget.dart';
 import 'completed_todo_screen.dart';
 import 'edit_todo_screen.dart';
@@ -87,25 +90,25 @@ class _HomeScreenState extends State<HomeScreen> {
                 ],
               ),
               SizedBox(height: 10),
-              Consumer<TodoController>(
-                builder: (context, value, child) {
-                  return value.isLoading
-                      ? Expanded(
-                          child: CupertinoActivityIndicator(),
-                        )
-                      : value.listTodo.isEmpty
-                          ? Expanded(child: Text('Empty...'))
-                          : Expanded(
+              BlocBuilder<TodoCubit, TodoState>(
+                builder: (context, state) {
+                  if (state.isLoading) {
+                    return Expanded(child: CupertinoActivityIndicator());
+                  }
+                  if (state.todos.isEmpty) {
+                    return Expanded(child: Text('Empty...'));
+                  }
+                          return Expanded(
                               child: ListView.builder(
-                                itemCount: value.listTodo.length,
+                                itemCount: state.todos.length,
                                 itemBuilder: (context, index) {
-                                  final entity = value.listTodo[index];
+                                  final entity = state.todos[index];
                                   return Dismissible(
                                     key: ValueKey(entity.id),
                                     direction: DismissDirection.horizontal,
                                     onDismissed: (direction) {
                                       deleteTodo(entity.id);
-                                      value.listTodo.remove(entity);
+                                      state.todos.remove(entity);
                                     },
                                     movementDuration: Duration(seconds: 1),
                                     resizeDuration: Duration(seconds: 2),
