@@ -8,7 +8,8 @@ import 'controllers/todo_controller.dart';
 import 'core/repositories/todo_repository.dart';
 import 'core/service/storage_service.dart';
 import 'cubits/counter_cubit/counter__cubit.dart';
-import 'cubits/todo_cubit/todo__cubit.dart';
+import 'cubits/todo_create/todo_create_cubit.dart';
+import 'cubits/todo_cubit/todo_cubit.dart';
 import 'locator.dart';
 import 'screens/counter_screen.dart';
 import 'screens/home_screen.dart';
@@ -25,6 +26,7 @@ class _ApplicationState extends State<Application> {
   late CounterController counterController;
   late TodoController todoController;
   late TodoCubit todoCubit;
+  late TodoCreateCubit todoCreateCubit;
   late CounterCubit counterCubit;
   @override
   void initState() {
@@ -32,6 +34,7 @@ class _ApplicationState extends State<Application> {
     todoCubit = locator();
     todoController = locator<TodoController>();
     counterCubit = locator();
+    todoCreateCubit = locator();
     super.initState();
   }
 
@@ -41,6 +44,7 @@ class _ApplicationState extends State<Application> {
       providers: [
         BlocProvider.value(value: counterCubit),
         BlocProvider.value(value: todoCubit),
+        BlocProvider.value(value: todoCreateCubit),
         ChangeNotifierProvider.value(value: counterController),
         ChangeNotifierProvider.value(value: todoController),
       ],

@@ -2,12 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../core/entities/todo_entity.dart';
-import '../cubits/todo_cubit/todo__cubit.dart';
+
+import '../cubits/todo_create/todo_create_cubit.dart';
+import '../cubits/todo_cubit/todo_cubit.dart';
 import '../widget/date_select_widget.dart';
 
 class EditTodoScreen extends StatefulWidget {
   final TodoEntity? todo;
-  const EditTodoScreen({super.key, this.todo});
+
+  const EditTodoScreen({
+    super.key,
+    this.todo,
+  });
 
   @override
   State<EditTodoScreen> createState() => _EditTodoScreenState();
@@ -22,7 +28,6 @@ class _EditTodoScreenState extends State<EditTodoScreen> {
 
   @override
   void initState() {
-    super.initState();
     final todo = widget.todo;
     if (todo != null) {
       todoEntity = todo;
@@ -30,6 +35,7 @@ class _EditTodoScreenState extends State<EditTodoScreen> {
       controllerDescription.text = todo.description;
       selectedDateTime = todo.dateTime;
     }
+    super.initState();
   }
 
   @override
@@ -39,41 +45,42 @@ class _EditTodoScreenState extends State<EditTodoScreen> {
         title: Text(widget.todo != null ? "Edit todo" : 'Create todo'),
       ),
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(15.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              DateSelectWidget(
-                initialDateTime: selectedDateTime,
-                onChanged: (value) {
-                  selectedDateTime = value;
-                },
-              ),
-              TextFormField(
-                controller: controllerTitle,
-                decoration: InputDecoration(labelText: 'Title'),
-              ),
-              TextFormField(
-                controller: controllerDescription,
-                decoration: InputDecoration(labelText: 'Description'),
-              ),
-            ],
+        child: BlocListener<TodoCreateCubit, TodoCreateState>(
+          listener: (context, state) {
+            if( state is TodoCreateSuccess){
+              showAboutDialog(context: context);
+            }
+          },
+          child: Padding(
+            padding: const EdgeInsets.all(15.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                DateSelectWidget(
+                  initialDateTime: selectedDateTime,
+                  onChanged: (value) {
+                    selectedDateTime = value;
+                  },
+                ),
+                TextFormField(
+                  controller: controllerTitle,
+                ),
+                TextFormField(
+                  controller: controllerDescription,
+                ),
+              ],
+            ),
           ),
         ),
       ),
       floatingActionButton: FloatingActionButton.small(
-        onPressed: () {
-          final editedTodo = todoEntity.copyWith(
+        onPressed: () async {
+          final TodoEntity editedTodo = todoEntity.copyWith(
             title: controllerTitle.text,
             description: controllerDescription.text,
             dateTime: selectedDateTime,
           );
-
-
-          context.read<TodoCubit>().saveTodo(editedTodo);
-
-          Navigator.pop(context);
+          context.read<TodoCreateCubit>().saveTodo(entity: editedTodo);
         },
         child: const Icon(Icons.save),
       ),

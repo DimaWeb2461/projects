@@ -6,7 +6,6 @@ class TodoController extends ChangeNotifier {
   final TodoRepository todoRepository ;
   List<TodoEntity> _todos = [];
   bool _isLoading = false;
-
   TodoController(this.todoRepository);
 
   List<TodoEntity> get listTodo => _todos;
