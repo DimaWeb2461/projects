@@ -2,6 +2,8 @@ import 'dart:developer';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import 'errors.dart';
+
 class FirebaseClient {
   final _client = FirebaseFirestore.instance;
 
@@ -16,6 +18,7 @@ class FirebaseClient {
       return data;
     } catch (error) {
       log(error.toString(), name: "ERROR GET FIREBASE");
+      handleError(error);
     }
   }
 
@@ -34,7 +37,7 @@ class FirebaseClient {
       );
       return data;
     } catch (error) {
-      log(error.toString(), name: "ERROR GET FIREBASE");
+      handleError(error);
     }
   }
 
@@ -49,7 +52,7 @@ class FirebaseClient {
         name: "FIREBASE DELETE",
       );
     } catch (error) {
-      log(error.toString(), name: "ERROR GET FIREBASE");
+      handleError(error);
     }
   }
 
@@ -61,8 +64,10 @@ class FirebaseClient {
     try {
       await _client.collection(collection).doc(id).set(data);
       log(" FIREBASE POST DATA $collection $id $data", name: "FIREBASE POST");
+    } on ExceptionWithMessage catch (error) {
+      rethrow;
     } catch (error) {
-      log(error.toString(), name: "ERROR GET FIREBASE");
+      handleError(error);
     }
   }
 
@@ -76,7 +81,7 @@ class FirebaseClient {
       log(" FIREBASE UPDATE DATA $collection $id $data",
           name: "FIREBASE UPDATE");
     } catch (error) {
-      log(error.toString(), name: "ERROR GET FIREBASE");
+      handleError(error);
     }
   }
 
@@ -91,6 +96,14 @@ class FirebaseClient {
     required String collection,
     required Map<String, dynamic> data,
   }) async {
+    throw ExceptionWithMessage('method not found');
     await post(collection: collection, id: data['id'].toString(), data: data);
+  }
+
+  void handleError(Object error) {
+    if (error.toString().contains("permission-denied")){
+      throw ExceptionWithMessage("Permission Denied !");
+    }
+    throw Exception(error.toString());
   }
 }

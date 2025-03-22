@@ -15,7 +15,7 @@ void setup() {
   locator.registerSingleton<StorageService>(HiveStorageServiceImpl());
   locator.registerSingleton(FirebaseClient());
 
-  locator.registerLazySingleton(() => TodoRepository(locator()));
+  locator.registerLazySingleton(() => TodoRepository(locator(), locator()));
 
   locator.registerLazySingleton(() => CounterController());
   locator.registerLazySingleton(() => TodoController(locator()));

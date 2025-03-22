@@ -2,6 +2,8 @@
 import 'package:bloc/bloc.dart';
 import 'package:meta/meta.dart';
 
+import '../../core/api/errors.dart';
+import '../../core/api/firebase_client.dart';
 import '../../core/entities/todo_entity.dart';
 import '../../core/repositories/todo_repository.dart';
 
@@ -61,6 +63,8 @@ class TodoCubit extends Cubit<TodoState> {
   _try({required Function() action}) {
     try {
       action.call();
+    } on ExceptionWithMessage catch (error) {
+      emit(TodoError("Error: ${error.message}"));
     } catch (error) {
       emit(TodoError("Error: ${error.toString()}"));
     }

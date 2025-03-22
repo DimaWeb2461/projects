@@ -32,20 +32,6 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     loadTodo();
     super.initState();
-    initialize();
-  }
-
-  initialize() async {
-    await locator<FirebaseClient>().get(collection: "users");
-
-    // await locator<FirebaseClient>().postWithId(
-    //   collection: "users",
-    //   data: TodoEntity.empty().toJson(),
-    // );
-    //
-    // await locator<FirebaseClient>().get(collection: "users");
-
-
   }
 
   loadTodo() {
@@ -107,82 +93,95 @@ class _HomeScreenState extends State<HomeScreen> {
                 ],
               ),
               SizedBox(height: 10),
-              BlocBuilder<TodoCubit, TodoState>(
-                builder: (context, state) {
-                  if (state is TodoError) {
-                    return Text(state.message);
-                  }
-                  if (state is TodoLoading) {
+              BlocBuilder<TodoCubit, TodoState>(builder: (context, state) {
+                if (state is TodoCreateLoading) {
+                  return Center(child: CircularProgressIndicator());
+                }
+                return BlocConsumer<TodoCubit, TodoState>(
+                  listener: (context, state) {
+                    if (state is TodoError) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          backgroundColor: Colors.red,
+                          content: Text(state.message),
+                        ),
+                      );
+                    }
+                  },
+                  builder: (context, state) {
+                    if (state is TodoError) {
+                      return Text(state.message);
+                    }
+                    if (state is TodoLoading) {
+                      return Center(child: CircularProgressIndicator());
+                    }
+
+                    if (state is TodoLoaded) {
+                      return state.todos.isEmpty
+                          ? Expanded(child: Text('Empty...'))
+                          : Expanded(
+                              child: ListView.builder(
+                                itemCount: state.todos.length,
+                                itemBuilder: (context, index) {
+                                  final entity = state.todos[index];
+                                  return Dismissible(
+                                    key: ValueKey(entity.id),
+                                    direction: DismissDirection.horizontal,
+                                    onDismissed: (direction) {
+                                      deleteTodo(entity.id);
+                                      print("TODOS ${state.todos.length}");
+                                    },
+                                    movementDuration: Duration(seconds: 1),
+                                    resizeDuration: Duration(seconds: 2),
+                                    background: Container(
+                                      width: 1.sw,
+                                      height: 30,
+                                      color: Colors.red,
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.center,
+                                        children: [
+                                          Text(
+                                            "DELETED !",
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    child: TodoCardWidget(
+                                      entity: entity,
+                                      onDelete: () => deleteTodo(entity.id),
+                                      onComplete: (todo) {
+                                        context
+                                            .read<TodoCubit>()
+                                            .saveTodoAndRemoveFromList(
+                                                todo: todo);
+                                      },
+                                      onTap: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) =>
+                                                EditTodoScreen(),
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  );
+                                },
+                              ),
+                            );
+                    }
                     return Center(
                       child: CircularProgressIndicator(),
                     );
-                  }
-
-                  if (state is TodoLoaded) {
-                    return state.todos.isEmpty
-                        ? Expanded(child: Text('Empty...'))
-                        : Expanded(
-                            child: ListView.builder(
-                              itemCount: state.todos.length,
-                              itemBuilder: (context, index) {
-                                final entity = state.todos[index];
-                                return Dismissible(
-                                  key: ValueKey(entity.id),
-                                  direction: DismissDirection.horizontal,
-                                  onDismissed: (direction) {
-                                    deleteTodo(entity.id);
-                                    print("TODOS ${state.todos.length}");
-                                  },
-                                  movementDuration: Duration(seconds: 1),
-                                  resizeDuration: Duration(seconds: 2),
-                                  background: Container(
-                                    width: 1.sw,
-                                    height: 30,
-                                    color: Colors.red,
-                                    child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.center,
-                                      children: [
-                                        Text(
-                                          "DELETED !",
-                                          style: TextStyle(
-                                            color: Colors.white,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  child: TodoCardWidget(
-                                    entity: entity,
-                                    onDelete: () => deleteTodo(entity.id),
-                                    onComplete: (todo) {
-                                      context
-                                          .read<TodoCubit>()
-                                          .saveTodoAndRemoveFromList(
-                                              todo: todo);
-                                    },
-                                    onTap: () {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) =>
-                                              EditTodoScreen(),
-                                        ),
-                                      );
-                                    },
-                                  ),
-                                );
-                              },
-                            ),
-                          );
-                  }
-                  return Center(
-                    child: CircularProgressIndicator(),
-                  );
-                },
-              ),
+                  },
+                );
+              }),
             ],
           ),
         ),

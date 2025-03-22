@@ -47,8 +47,16 @@ class _EditTodoScreenState extends State<EditTodoScreen> {
       body: SafeArea(
         child: BlocListener<TodoCreateCubit, TodoCreateState>(
           listener: (context, state) {
-            if( state is TodoCreateSuccess){
+            if (state is TodoCreateSuccess) {
               showAboutDialog(context: context);
+            }
+            if (state is TodoCreateError) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  backgroundColor: Colors.red,
+                  content: Text(state.message),
+                ),
+              );
             }
           },
           child: Padding(
