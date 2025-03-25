@@ -36,8 +36,8 @@ class TodoRepository {
   TodoRepository(this._storageService, this._client);
   static const _boxName = 'todos';
 
- Future<Either<AppError, void>> createTodo(TodoEntity todo) {
-  return  action(
+  Future<Either<AppError, void>> createTodo(TodoEntity todo) {
+    return action(
       task: () async {
         await _client.postWithId(
           collection: FirebaseConstants.kTodos,
@@ -65,7 +65,39 @@ class TodoRepository {
       String? query,
       TodoSearchBy? searchBy = TodoSearchBy.title}) async {
     // final data = await _storageService.getAll(boxName: _boxName);
-    final data = await _client.get(collection: FirebaseConstants.kTodos);
+    final filters = [
+      FirebaseFilter(
+        field: "isCompleted",
+        type: FirebaseApiFilterType.isEqualsTo,
+        value: isCompleted,
+      ),
+    ];
+
+    if (query != null && query.isNotEmpty) {
+      switch (searchBy) {
+        case TodoSearchBy.title:
+          filters.add(
+            FirebaseFilter(
+              field: "title",
+              type: FirebaseApiFilterType.isEqualsTo,
+              value: query,
+            ),
+          );
+        case TodoSearchBy.description:
+          filters.add(
+            FirebaseFilter(
+              field: "description",
+              type: FirebaseApiFilterType.isEqualsTo,
+              value: query,
+            ),
+          );
+        case null:
+          throw UnimplementedError();
+      }
+    }
+
+    final data = await _client.get(
+        collection: FirebaseConstants.kTodos, filters: filters);
 
     log(data.toString());
     final List<TodoEntity> listTodo = List<TodoEntity>.from(data.map(
@@ -76,30 +108,6 @@ class TodoRepository {
       },
     )).toList();
 
-    List<TodoEntity> filteredList = listTodo;
-
-    if (isCompleted != null) {
-      filteredList = listTodo
-          .where((element) => element.isCompleted == isCompleted)
-          .toList();
-    }
-
-    if (query != null && query.isNotEmpty) {
-      switch (searchBy) {
-        case TodoSearchBy.title:
-          filteredList = listTodo
-              .where((element) => element.title.contains(query))
-              .toList();
-        case TodoSearchBy.description:
-          filteredList = listTodo
-              .where((element) => element.description.contains(query))
-              .toList();
-        case null:
-          // TODO: Handle this case.
-          throw UnimplementedError();
-      }
-    }
-
-    return filteredList;
+    return listTodo;
   }
 }

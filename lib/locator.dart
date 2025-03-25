@@ -22,6 +22,6 @@ void setup() {
 
   locator.registerFactory(() => CounterCubit());
   locator.registerFactory(() => TodoCubit(locator()));
-  locator.registerFactory(() => TodoCreateCubit(locator()));
+  locator.registerFactory(() => TodoCreateCubit(locator(), locator()));
 
 }

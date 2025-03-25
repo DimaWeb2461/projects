@@ -8,8 +8,8 @@ Future<Either<AppError, void>> action({required Future Function() task}) async {
    await task.call();
     return right(null);
 } on ExceptionWithMessage catch (error) {
-    return Left(AppError(errorMessage: error.message));
+    return Left(AppError(errorMessage: error.message, type: error.type));
   } catch(error) {
-    return Left(AppError(errorMessage: error.toString()));
+    return Left(AppError(errorMessage: error.toString(), type: AppErrorType.api));
   }
 }

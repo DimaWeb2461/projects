@@ -4,18 +4,50 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'errors.dart';
 
+enum FirebaseApiFilterType {
+  isEqualsTo,
+  isNotEqualsTo,
+}
+
+class FirebaseFilter {
+  final String field;
+  final FirebaseApiFilterType type;
+  final dynamic value;
+
+  FirebaseFilter({
+    required this.field,
+    required this.type,
+    required this.value,
+  });
+}
+
 class FirebaseClient {
   final _client = FirebaseFirestore.instance;
 
-  Future<dynamic> get({
-    required String collection,
-  }) async {
+  Future<dynamic> get(
+      {required String collection, List<FirebaseFilter>? filters}) async {
     try {
-      final QuerySnapshot<Map<String, dynamic>> response =
-          await _client.collection(collection).get();
-      final data = response.docs.map((e) => e.data()).toList();
-      log(" FIREBASE GET DATA $collection\n$data", name: "FIREBASE GET");
-      return data;
+      Query collectionFirebase = _client.collection(collection);
+
+      if (filters != null) {
+        for (var filter in filters) {
+          switch (filter.type) {
+            case FirebaseApiFilterType.isEqualsTo:
+              collectionFirebase = collectionFirebase.where(filter.field,
+                  isEqualTo: filter.value);
+            case FirebaseApiFilterType.isNotEqualsTo:
+              collectionFirebase = collectionFirebase.where(filter.field,
+                  isNotEqualTo: filter.value);
+          }
+        }
+      }
+
+      log(" FIREBASE GET DATA $collection\n", name: "FIREBASE GET");
+
+      final data = await collectionFirebase.get();
+      final response = data.docs.map((e) => e.data()).toList();
+
+      return response;
     } catch (error) {
       log(error.toString(), name: "ERROR GET FIREBASE");
       handleError(error);
@@ -96,13 +128,16 @@ class FirebaseClient {
     required String collection,
     required Map<String, dynamic> data,
   }) async {
-    throw ExceptionWithMessage('method not found');
+    // throw ExceptionWithMessage('method not found');
     await post(collection: collection, id: data['id'].toString(), data: data);
   }
 
   void handleError(Object error) {
-    if (error.toString().contains("permission-denied")){
-      throw ExceptionWithMessage("Permission Denied !");
+    if (error.toString().contains("permission-denied")) {
+      throw ExceptionWithMessage("Permission Denied !", AppErrorType.notAuth);
+    }
+    if (error.toString().contains("permission-denied")) {
+      throw ExceptionWithMessage("Test!", AppErrorType.api);
     }
     throw Exception(error.toString());
   }

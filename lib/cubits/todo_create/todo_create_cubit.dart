@@ -10,7 +10,8 @@ part 'todo_create_state.dart';
 
 class TodoCreateCubit extends Cubit<TodoCreateState> {
   final TodoRepository todoRepository;
-  TodoCreateCubit(this.todoRepository) : super(TodoCreateInitial());
+  final TodoCubit todoCubit;
+  TodoCreateCubit(this.todoRepository, this.todoCubit) : super(TodoCreateInitial());
 
   saveTodo({required TodoEntity entity}) async {
     emit(TodoCreateLoading());
@@ -20,6 +21,7 @@ class TodoCreateCubit extends Cubit<TodoCreateState> {
     }, (r) async {
       emit(TodoCreateSuccess());
       await Future.delayed(Duration(seconds: 2));
+      await todoCubit.loadTodo();
     });
   }
 }
